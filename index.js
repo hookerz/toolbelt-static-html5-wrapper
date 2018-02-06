@@ -38,21 +38,22 @@ let main = function (rootDir) {
     let pathBuilder = function (relDir) {
       return relDir.replace('.jpg', '').replace('.gif', '').replace('.png', '')
     };
-    let copyImageAndPopulate = function (rootDir, dirs, template) {
-      _.each(dirs, (value) => {
-        let item = path.join(rootDir, pathBuilder(value));
-        fs.copySync(template, item)
+    let copyRetinaImages = function () {
+      _.each(retinaImages, (value) => {
+        let source = path.join(retinaDir, value);
+        let destination = path.join(tmpobj.name, pathBuilder(value),path.basename(source));
+        fs.copySync(source, destination)
       })
-    }
+    };
     let copyToFinal = function () {
       fs.copySync(tmpobj.name, outPutDir)
-    }
+    };
     let copyTemplates = function () {
       _.each(retinaImages, (value) => {
         let item = path.join(tmpobj.name, pathBuilder(value));
         fs.copySync(templatesDir, item)
       })
-    }
+    };
     let makeOutputDirs = function () {
       _.each(retinaImages, (value) => {
         let item = path.join(tmpobj.name, pathBuilder(value));
@@ -78,6 +79,7 @@ let main = function (rootDir) {
       }
       makeOutputDirs();
       copyTemplates();
+      copyRetinaImages();
       copyToFinal();
       resolve();
     };
