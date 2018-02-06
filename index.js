@@ -24,55 +24,67 @@ let main = function (rootDir) {
       console.error('static directory missing');
       reject(new Error('static directory missing'));
     }
-    let retinaImages = getImageFiles(retinaDir);
-    let staticImages = getImageFiles(staticDir);
-    let missingStatics = checkStaticsExist(retinaImages, staticImages);
-    if (missingStatics !== null) {
-      let err = new Error('static directory missing');
-      err.missingStatics = missingStatics;
-      console.error('statics are missing ', err.missingStatics);
-      reject(err);
+    let retinaImages = null;
+    let staticImages = null;
+    let missingStatics = null;
+    let getImageFiles = function (directory) {
+      return _.map(
+        glob.sync(path.join(directory, '/**/*.{png,gif,jpg}')),
+        (value) => {
+          return relative.toBase(directory, value)
+        }
+      )
+    };
+    let pathBuilder = function (relDir) {
+      return relDir.replace('.jpg', '').replace('.gif', '').replace('.png', '')
     }
-    makeOutputDirs(tmpobj.name, retinaImages);
-    copyTemplates(tmpobj.name, retinaImages,templatesDir);
-    
-    if (fs.existsSync(tmpobj.name)) {
-      fs.copySync(tmpobj.name, outPutDir)
-    } else {
-      console.log('wtf')
+    let copyImageAndPopulate = function (rootDir, dirs, template) {
+      _.each(dirs, (value) => {
+        let item = path.join(rootDir, pathBuilder(value));
+        fs.copySync(template, item)
+      })
     }
-    resolve();
-  })
-};
-let pathBuilder = function (relDir) {
-  return relDir.replace('.jpg', '').replace('.gif', '').replace('.png', '')
-}
-let copyTemplates = function (rootDir, dirs, template) {
-  _.each(dirs, (value) => {
-    let item = path.join(rootDir, pathBuilder(value));
-    fs.copySync(template, item)
-  })
-}
-let makeOutputDirs = function (rootDir, dirs) {
-  _.each(dirs, (value) => {
-    let item = path.join(rootDir, pathBuilder(value));
-    fs.ensureDirSync(item);
-  })
-};
-let getImageFiles = function (directory) {
-  return _.map(
-    glob.sync(path.join(directory, '/**/*.{png,gif,jpg}')),
-    (value) => {
-      return relative.toBase(directory, value)
+    let copyTemplates = function (rootDir, dirs, template) {
+      _.each(dirs, (value) => {
+        let item = path.join(rootDir, pathBuilder(value));
+        fs.copySync(template, item)
+      })
     }
-  )
-};
-let checkStaticsExist = function (retinas, statics) {
-  let missing = _.difference(retinas, statics);
-  if (missing.length !== 0) {
-    return missing
-  }
-  return null;
+    let makeOutputDirs = function (rootDir, dirs) {
+      _.each(dirs, (value) => {
+        let item = path.join(rootDir, pathBuilder(value));
+        fs.ensureDirSync(item);
+      })
+    };
+    let checkStaticsExist = function (retinas, statics) {
+      let missing = _.difference(retinas, statics);
+      if (missing.length !== 0) {
+        return missing
+      }
+      return null;
+    };
+    let run = function () {
+      retinaImages = getImageFiles(retinaDir);
+      staticImages = getImageFiles(staticDir);
+      missingStatics = checkStaticsExist(retinaImages, staticImages);
+      if (missingStatics !== null) {
+        let err = new Error('static directory missing');
+        err.missingStatics = missingStatics;
+        console.error('statics are missing ', err.missingStatics);
+        reject(err);
+      }
+      makeOutputDirs(tmpobj.name, retinaImages);
+      copyTemplates(tmpobj.name, retinaImages, templatesDir);
+      if (fs.existsSync(tmpobj.name)) {
+        fs.copySync(tmpobj.name, outPutDir)
+      } else {
+        console.log('wtf')
+      }
+      resolve();
+    };
+    run()
+    // end promise
+  });
 };
 let reductiveItterator = function (sourceArray, iteree) {
   sourceArray = _.cloneDeep(sourceArray);
