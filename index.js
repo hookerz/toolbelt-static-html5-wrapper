@@ -4,7 +4,6 @@ const path = require('path');
 const fs = require('fs');
 const glob = require('glob');
 const relative = require('relative');
-
 let main = function (rootDir) {
   console.log(`Hello world ${process.env.SOLOTEST}`);
   console.log(`Hello world ${process.cwd()}`);
@@ -19,12 +18,26 @@ let main = function (rootDir) {
   }
   let retinaImages = getImageFiles(retinaDir);
   let staticImages = getImageFiles(staticDir);
+  
+  checkStaticsExist (retinaImages,staticImages);
+  
 };
 let getImageFiles = function (directory) {
   return _.map(
     glob.sync(path.join(directory, '/**/*.{png,gif,jpg}')),
-    (value) => {return relative.toBase(directory,  value)}
+    (value) => {
+      return relative.toBase(directory, value)
+    }
   )
+};
+let checkStaticsExist = function (retinas, statics) {
+  
+  //@Array
+  let missing = _.difference(retinas, statics);
+  if (missing.length !== 0) {
+    console.log(missing);
+    throw 'static missing'
+  }
 };
 let reductiveItterator = function (sourceArray, iteree) {
   sourceArray = _.cloneDeep(sourceArray);
