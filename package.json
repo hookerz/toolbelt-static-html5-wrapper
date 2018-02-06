@@ -19,6 +19,7 @@
   "dependencies": {
     "glob": "^7.1.2",
     "lodash": "^4.17.5",
-    "relative": "^3.0.2"
+    "relative": "^3.0.2",
+    "tmp": "0.0.33"
   }
 }

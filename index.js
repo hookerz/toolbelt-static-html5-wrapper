@@ -4,6 +4,7 @@ const path = require('path');
 const fs = require('fs');
 const glob = require('glob');
 const relative = require('relative');
+const tmp = require('tmp');
 let main = function (rootDir) {
   return new Promise((resolve, reject) => {
     console.log(`Hello world ${process.env.SOLOTEST}`);
@@ -11,6 +12,7 @@ let main = function (rootDir) {
     const retinaDir = path.normalize(path.join(rootDir, 'Retina'));
     const staticDir = path.join(rootDir, 'Statics');
     const templatesDir = path.join(process.cwd(), 'templates', 'dcm');
+    const tempDir = path.join(rootDir, 'Temp');
     if (!fs.existsSync(retinaDir)) {
       console.error('retina directory missing');
       reject(new Error('retina directory missing'));
@@ -19,6 +21,9 @@ let main = function (rootDir) {
       console.error('static directory missing');
       reject(new Error('static directory missing'));
     }
+    let tmpobj = tmp.dirSync();
+    console.log('Dir: ', tmpobj.name);
+    tmpobj.removeCallback();
     let retinaImages = getImageFiles(retinaDir);
     let staticImages = getImageFiles(staticDir);
     let missingStatics = checkStaticsExist(retinaImages, staticImages);
@@ -28,6 +33,14 @@ let main = function (rootDir) {
       console.error('statics are missing ', err.missingStatics);
       reject(err);
     }
+    makeOutputDirs(tempDir, retinaImages)
+  })
+};
+let makeOutputDirs = function (rootDir, dirs) {
+  return reductiveItterator(dirs, (value) => {
+    return new Promise((resolve, reject) => {
+      fs.mkdir(path.join(rootDir, value), resolve);
+    })
   })
 };
 let getImageFiles = function (directory) {
