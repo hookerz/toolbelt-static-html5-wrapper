@@ -70,9 +70,9 @@ let checkStaticsExist = function (retinas, statics) {
 };
 let reductiveItterator = function (sourceArray, iteree) {
   sourceArray = _.cloneDeep(sourceArray);
-  return new Promise(function (resolve, reject) {
+  return new Promise( (resolve, reject) => {
     let run = function () {
-      let item = _.remove(sourceArray, function (value, index) {
+      let item = _.remove(sourceArray,  (value, index) => {
         return index === 0;
       });
       if (item.length === 0) {
