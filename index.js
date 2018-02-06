@@ -27,7 +27,10 @@ let main = function (rootDir) {
       console.error('static directory missing');
       reject(new Error('static directory missing'));
     }
-    del.sync(outPutDir,{force:true});
+  
+    process.chdir(rootDir);
+    
+    del.sync(outPutDir);
     
     let retinaImages = null;
     let staticImages = null;
@@ -54,7 +57,9 @@ let main = function (rootDir) {
         let css = path.join(destinationDirectory, 'main.css');
         let html = path.join(destinationDirectory, 'index.html');
   
-        del.sync([image, css,html],{force:true});
+        process.chdir(destinationDirectory);
+        
+        del.sync([image, css,html]);
         
       })
     };
@@ -106,6 +111,13 @@ let main = function (rootDir) {
         fs.copySync(source, destination)
       })
     };
+    let copyStaticsImages = function () {
+      _.each(retinaImages, (value) => {
+        let source = path.join(staticDir, value);
+        let destination = path.join(tmpobj.name, pathBuilder(value), path.basename(source));
+        fs.copySync(source, destination)
+      })
+    };
     let copyToFinal = function () {
       fs.copySync(tmpobj.name, outPutDir)
     };
@@ -147,8 +159,10 @@ let main = function (rootDir) {
       writeValuesToTemplates();
       buildZip();
       deleteFiles();
+      copyStaticsImages();
       //
       copyToFinal();
+      process.chdir(rootDir);
       resolve();
     };
     run()
