@@ -5,6 +5,8 @@ const fs = require('fs-extra');
 const glob = require('glob');
 const relative = require('relative');
 const tmp = require('tmp');
+const imageinfo = require('imageinfo');
+const replace = require('replace-in-file');
 let main = function (rootDir) {
   return new Promise((resolve, reject) => {
     console.log(`Hello world ${process.env.SOLOTEST}`);
@@ -38,10 +40,32 @@ let main = function (rootDir) {
     let pathBuilder = function (relDir) {
       return relDir.replace('.jpg', '').replace('.gif', '').replace('.png', '')
     };
+    let writeValuesToTemplates = function () {
+      _.each(retinaImages, (value) => {
+        let source = path.join(retinaDir, value);
+        let name = path.basename(source);
+        let destinationFile = path.join(tmpobj.name, pathBuilder(value), name);
+        let destinationDirectory = path.join(tmpobj.name, pathBuilder(value));
+        let file = fs.readFileSync(destinationFile);
+        let info = imageinfo(file)
+        //console.log("Data is type:", info.mimeType);
+        //console.log("  Dimensions:", info.width, "x", info.height);
+        let finalWidth = info.width / 2;
+        let finalHeight = info.height / 2;
+        replace.sync({
+          files: [
+            path.join(destinationDirectory, '/**/*.html'),
+            path.join(destinationDirectory, '/**/*.css')
+          ],
+          from: [/__IMAGE__/g, /__WIDTH__/g, /__HEIGHT__/g],
+          to: [name, finalWidth, finalHeight]
+        })
+      })
+    };
     let copyRetinaImages = function () {
       _.each(retinaImages, (value) => {
         let source = path.join(retinaDir, value);
-        let destination = path.join(tmpobj.name, pathBuilder(value),path.basename(source));
+        let destination = path.join(tmpobj.name, pathBuilder(value), path.basename(source));
         fs.copySync(source, destination)
       })
     };
@@ -80,7 +104,9 @@ let main = function (rootDir) {
       makeOutputDirs();
       copyTemplates();
       copyRetinaImages();
+      writeValuesToTemplates();
       copyToFinal();
+      
       resolve();
     };
     run()
