@@ -29,6 +29,7 @@ let main = function (rootDir) {
     let retinaImages = null;
     let staticImages = null;
     let missingStatics = null;
+    // application functions.
     let getImageFiles = function (directory) {
       return _.map(
         glob.sync(path.join(directory, '/**/*.{png,gif,jpg}')),
@@ -39,6 +40,23 @@ let main = function (rootDir) {
     };
     let pathBuilder = function (relDir) {
       return relDir.replace('.jpg', '').replace('.gif', '').replace('.png', '')
+    };
+    let buildZip = function () {
+      _.each(retinaImages, (value) => {
+        let source = path.join(retinaDir, value);
+        let name = path.basename(source);
+        let destinationDirectory = path.join(tmpobj.name, pathBuilder(value));
+        let zip = new require('node-zip')();
+        let image = fs.readFileSync(path.join(destinationDirectory, name));
+        let css = fs.readFileSync(path.join(destinationDirectory, 'main.css'));
+        let html = fs.readFileSync(path.join(destinationDirectory, 'index.html'));
+        zip.file('index.html', html);
+        zip.file('main.css', css);
+        zip.file(name, image, {base64: true});
+        let data = zip.generate({base64: false, compression: 'DEFLATE'});
+        let zipFileName = path.join(destinationDirectory, name.replace('.jpg', '.zip').replace('.gif', '.zip').replace('.png', '.zip'));
+        fs.writeFileSync(zipFileName, data, 'binary');
+      })
     };
     let writeValuesToTemplates = function () {
       _.each(retinaImages, (value) => {
@@ -91,7 +109,7 @@ let main = function (rootDir) {
       }
       return null;
     };
-    let run = function () {
+    let buildLists = function () {
       retinaImages = getImageFiles(retinaDir);
       staticImages = getImageFiles(staticDir);
       missingStatics = checkStaticsExist();
@@ -101,12 +119,16 @@ let main = function (rootDir) {
         console.error('statics are missing ', err.missingStatics);
         reject(err);
       }
+    };
+    let run = function () {
+      buildLists();
       makeOutputDirs();
       copyTemplates();
       copyRetinaImages();
       writeValuesToTemplates();
+      buildZip()
+      //
       copyToFinal();
-      
       resolve();
     };
     run()

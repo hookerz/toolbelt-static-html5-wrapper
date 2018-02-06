@@ -21,6 +21,7 @@
     "glob": "^7.1.2",
     "imageinfo": "^1.0.4",
     "lodash": "^4.17.5",
+    "node-zip": "^1.1.1",
     "relative": "^3.0.2",
     "replace-in-file": "^3.1.1",
     "tmp": "0.0.33"
