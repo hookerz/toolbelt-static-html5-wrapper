@@ -15,7 +15,7 @@ let main = function (rootDir) {
     const templatesDir = path.join(process.cwd(), 'templates', 'dcm');
     const tmpobj = tmp.dirSync();
     console.log('Dir: ', tmpobj.name);
-   // tmpobj.removeCallback();
+    // tmpobj.removeCallback();
     if (!fs.existsSync(retinaDir)) {
       console.error('retina directory missing');
       reject(new Error('retina directory missing'));
@@ -34,27 +34,24 @@ let main = function (rootDir) {
       reject(err);
     }
     makeOutputDirs(tmpobj.name, retinaImages)
-      .then(function () {
-  
-        if (fs.existsSync(tmpobj.name)) {
-          return fs.copy(tmpobj.name, outPutDir)
-        }else {
-          
-          console.log ('wtf')
-        }
-        
-        
-      })
-      .then(resolve)
+    if (fs.existsSync(tmpobj.name)) {
+      return fs.copySync(tmpobj.name, outPutDir)
+    } else {
+      console.log('wtf')
+    }
   })
 };
 let makeOutputDirs = function (rootDir, dirs) {
-  return reductiveItterator(dirs, (value) => {
-    return new Promise((resolve, reject) => {
-      let item = path.join(rootDir, value.replace('.jpg', '').replace('.gif', '').replace('.png', ''));
-      fs.ensureDir(item, resolve);
-    })
+  
+  _.each (dirs,(value)=>{
+  
+    let item = path.join(rootDir, value.replace('.jpg', '').replace('.gif', '').replace('.png', ''));
+    fs.ensureDirSync(item);
+    
   })
+  
+  
+
 };
 let getImageFiles = function (directory) {
   return _.map(
