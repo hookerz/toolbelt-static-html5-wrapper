@@ -37,27 +37,30 @@ let main = function (rootDir) {
     };
     let pathBuilder = function (relDir) {
       return relDir.replace('.jpg', '').replace('.gif', '').replace('.png', '')
-    }
+    };
     let copyImageAndPopulate = function (rootDir, dirs, template) {
       _.each(dirs, (value) => {
         let item = path.join(rootDir, pathBuilder(value));
         fs.copySync(template, item)
       })
     }
-    let copyTemplates = function (rootDir, dirs, template) {
-      _.each(dirs, (value) => {
-        let item = path.join(rootDir, pathBuilder(value));
-        fs.copySync(template, item)
+    let copyToFinal = function () {
+      fs.copySync(tmpobj.name, outPutDir)
+    }
+    let copyTemplates = function () {
+      _.each(retinaImages, (value) => {
+        let item = path.join(tmpobj.name, pathBuilder(value));
+        fs.copySync(templatesDir, item)
       })
     }
-    let makeOutputDirs = function (rootDir, dirs) {
-      _.each(dirs, (value) => {
-        let item = path.join(rootDir, pathBuilder(value));
+    let makeOutputDirs = function () {
+      _.each(retinaImages, (value) => {
+        let item = path.join(tmpobj.name, pathBuilder(value));
         fs.ensureDirSync(item);
       })
     };
-    let checkStaticsExist = function (retinas, statics) {
-      let missing = _.difference(retinas, statics);
+    let checkStaticsExist = function () {
+      let missing = _.difference(retinaImages, staticImages);
       if (missing.length !== 0) {
         return missing
       }
@@ -66,20 +69,16 @@ let main = function (rootDir) {
     let run = function () {
       retinaImages = getImageFiles(retinaDir);
       staticImages = getImageFiles(staticDir);
-      missingStatics = checkStaticsExist(retinaImages, staticImages);
+      missingStatics = checkStaticsExist();
       if (missingStatics !== null) {
         let err = new Error('static directory missing');
         err.missingStatics = missingStatics;
         console.error('statics are missing ', err.missingStatics);
         reject(err);
       }
-      makeOutputDirs(tmpobj.name, retinaImages);
-      copyTemplates(tmpobj.name, retinaImages, templatesDir);
-      if (fs.existsSync(tmpobj.name)) {
-        fs.copySync(tmpobj.name, outPutDir)
-      } else {
-        console.log('wtf')
-      }
+      makeOutputDirs();
+      copyTemplates();
+      copyToFinal();
       resolve();
     };
     run()
