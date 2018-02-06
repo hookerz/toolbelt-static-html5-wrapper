@@ -57,6 +57,7 @@ let main = function (rootDir) {
         '!' + tmpobj.name,
       ]);
       process.chdir(rootDir);
+      tmpobj.removeCallback();
     };
     let deleteFiles = function () {
       _.each(retinaImages, (value) => {
@@ -168,7 +169,6 @@ let main = function (rootDir) {
       //
       copyToFinal();
       cleanUp();
-      tmpobj.removeCallback();
       resolve();
     };
     run()
