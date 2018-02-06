@@ -5,22 +5,30 @@ const fs = require('fs');
 const glob = require('glob');
 const relative = require('relative');
 let main = function (rootDir) {
-  console.log(`Hello world ${process.env.SOLOTEST}`);
-  console.log(`Hello world ${process.cwd()}`);
-  const retinaDir = path.normalize(path.join(rootDir, 'Retina'));
-  const staticDir = path.join(rootDir, 'Statics');
-  const templatesDir = path.join(process.cwd(), 'templates', 'dcm');
-  if (!fs.existsSync(retinaDir)) {
-    throw 'retina directory missing';
-  }
-  if (!fs.existsSync(retinaDir)) {
-    throw 'static directory missing';
-  }
-  let retinaImages = getImageFiles(retinaDir);
-  let staticImages = getImageFiles(staticDir);
-  
-  checkStaticsExist (retinaImages,staticImages);
-  
+  return new Promise((resolve, reject) => {
+    console.log(`Hello world ${process.env.SOLOTEST}`);
+    console.log(`Hello world ${process.cwd()}`);
+    const retinaDir = path.normalize(path.join(rootDir, 'Retina'));
+    const staticDir = path.join(rootDir, 'Statics');
+    const templatesDir = path.join(process.cwd(), 'templates', 'dcm');
+    if (!fs.existsSync(retinaDir)) {
+      console.error('retina directory missing');
+      reject(new Error('retina directory missing'));
+    }
+    if (!fs.existsSync(retinaDir)) {
+      console.error('static directory missing');
+      reject(new Error('static directory missing'));
+    }
+    let retinaImages = getImageFiles(retinaDir);
+    let staticImages = getImageFiles(staticDir);
+    let missingStatics = checkStaticsExist(retinaImages, staticImages);
+    if (missingStatics !== null) {
+      let err = new Error('static directory missing');
+      err.missingStatics = missingStatics;
+      console.error('statics are missing ', err.missingStatics);
+      reject(err);
+    }
+  })
 };
 let getImageFiles = function (directory) {
   return _.map(
@@ -31,13 +39,11 @@ let getImageFiles = function (directory) {
   )
 };
 let checkStaticsExist = function (retinas, statics) {
-  
-  //@Array
   let missing = _.difference(retinas, statics);
   if (missing.length !== 0) {
-    console.log(missing);
-    throw 'static missing'
+    return missing
   }
+  return null;
 };
 let reductiveItterator = function (sourceArray, iteree) {
   sourceArray = _.cloneDeep(sourceArray);
