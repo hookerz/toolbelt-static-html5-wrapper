@@ -1,7 +1,7 @@
 'use strict';
 const _ = require('lodash');
 const path = require('path');
-const fs = require('fs');
+const fs = require('fs-extra');
 const glob = require('glob');
 const relative = require('relative');
 const tmp = require('tmp');
@@ -11,8 +11,11 @@ let main = function (rootDir) {
     console.log(`Hello world ${process.cwd()}`);
     const retinaDir = path.normalize(path.join(rootDir, 'Retina'));
     const staticDir = path.join(rootDir, 'Statics');
+    const outPutDir = path.join(rootDir, 'Output');
     const templatesDir = path.join(process.cwd(), 'templates', 'dcm');
-    const tempDir = path.join(rootDir, 'Temp');
+    const tmpobj = tmp.dirSync();
+    console.log('Dir: ', tmpobj.name);
+   // tmpobj.removeCallback();
     if (!fs.existsSync(retinaDir)) {
       console.error('retina directory missing');
       reject(new Error('retina directory missing'));
@@ -21,9 +24,6 @@ let main = function (rootDir) {
       console.error('static directory missing');
       reject(new Error('static directory missing'));
     }
-    let tmpobj = tmp.dirSync();
-    console.log('Dir: ', tmpobj.name);
-    tmpobj.removeCallback();
     let retinaImages = getImageFiles(retinaDir);
     let staticImages = getImageFiles(staticDir);
     let missingStatics = checkStaticsExist(retinaImages, staticImages);
@@ -33,13 +33,26 @@ let main = function (rootDir) {
       console.error('statics are missing ', err.missingStatics);
       reject(err);
     }
-    makeOutputDirs(tempDir, retinaImages)
+    makeOutputDirs(tmpobj.name, retinaImages)
+      .then(function () {
+  
+        if (fs.existsSync(tmpobj.name)) {
+          return fs.copy(tmpobj.name, outPutDir)
+        }else {
+          
+          console.log ('wtf')
+        }
+        
+        
+      })
+      .then(resolve)
   })
 };
 let makeOutputDirs = function (rootDir, dirs) {
   return reductiveItterator(dirs, (value) => {
     return new Promise((resolve, reject) => {
-      fs.mkdir(path.join(rootDir, value), resolve);
+      let item = path.join(rootDir, value.replace('.jpg', '').replace('.gif', '').replace('.png', ''));
+      fs.ensureDir(item, resolve);
     })
   })
 };
