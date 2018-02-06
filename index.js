@@ -8,6 +8,9 @@ const tmp = require('tmp');
 const imageinfo = require('imageinfo');
 const replace = require('replace-in-file');
 const del = require('del');
+if (process.env.SOLOTEST !== 'true') {
+  tmp.setGracefulCleanup();
+}
 let main = function (rootDir) {
   return new Promise((resolve, reject) => {
     console.log(`Hello world ${process.env.SOLOTEST}`);
@@ -27,11 +30,8 @@ let main = function (rootDir) {
       console.error('static directory missing');
       reject(new Error('static directory missing'));
     }
-  
     process.chdir(rootDir);
-    
     del.sync(outPutDir);
-    
     let retinaImages = null;
     let staticImages = null;
     let missingStatics = null;
@@ -47,7 +47,17 @@ let main = function (rootDir) {
     let pathBuilder = function (relDir) {
       return relDir.replace('.jpg', '').replace('.gif', '').replace('.png', '')
     };
-  
+    let cleanUp = function () {
+      if (process.env.SOLOTEST === 'true') {
+        return;
+      }
+      process.chdir(tmpobj.name);
+      del.sync([
+        path.join(tmpobj.name, '/**'),
+        '!' + tmpobj.name,
+      ]);
+      process.chdir(rootDir);
+    };
     let deleteFiles = function () {
       _.each(retinaImages, (value) => {
         let source = path.join(retinaDir, value);
@@ -56,15 +66,10 @@ let main = function (rootDir) {
         let image = path.join(destinationDirectory, name);
         let css = path.join(destinationDirectory, 'main.css');
         let html = path.join(destinationDirectory, 'index.html');
-  
         process.chdir(destinationDirectory);
-        
-        del.sync([image, css,html]);
-        
+        del.sync([image, css, html]);
       })
     };
-    
-    
     let buildZip = function () {
       _.each(retinaImages, (value) => {
         let source = path.join(retinaDir, value);
@@ -162,7 +167,8 @@ let main = function (rootDir) {
       copyStaticsImages();
       //
       copyToFinal();
-      process.chdir(rootDir);
+      cleanUp();
+      tmpobj.removeCallback();
       resolve();
     };
     run()
