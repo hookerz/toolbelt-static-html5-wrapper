@@ -1,47 +1,31 @@
 'use strict';
-
 const _ = require('lodash');
 const path = require('path');
 const fs = require('fs');
+const glob = require('glob');
+const relative = require('relative');
 
 let main = function (rootDir) {
-
-  console.log (`Hello world ${process.env.SOLOTEST}`);
-  console.log (`Hello world ${process.cwd()}`);
-  
-  const retinaDir = path.join(rootDir,'Retina');
-  const staticDir = path.join(rootDir,'Statics');
-  
-  
+  console.log(`Hello world ${process.env.SOLOTEST}`);
+  console.log(`Hello world ${process.cwd()}`);
+  const retinaDir = path.normalize(path.join(rootDir, 'Retina'));
+  const staticDir = path.join(rootDir, 'Statics');
+  const templatesDir = path.join(process.cwd(), 'templates', 'dcm');
   if (!fs.existsSync(retinaDir)) {
     throw 'retina directory missing';
   }
   if (!fs.existsSync(retinaDir)) {
     throw 'static directory missing';
   }
-  
-  
-  
-  
+  let retinaImages = getImageFiles(retinaDir);
+  let staticImages = getImageFiles(staticDir);
 };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+let getImageFiles = function (directory) {
+  return _.map(
+    glob.sync(path.join(directory, '/**/*.{png,gif,jpg}')),
+    (value) => {return relative.toBase(directory,  value)}
+  )
+};
 let reductiveItterator = function (sourceArray, iteree) {
   sourceArray = _.cloneDeep(sourceArray);
   return new Promise(function (resolve, reject) {
@@ -60,20 +44,9 @@ let reductiveItterator = function (sourceArray, iteree) {
     run();
   })
 };
-
-
-
-
-
-
-
-
 module.exports = main;
-
-if (process.env.SOLOTEST ==='true') {
-  
-  main ('G:\\DOCS\\Out Loud ANEW\\internal 2018\\toolbelt-static-html5-wrapper\\testData')
-  
+if (process.env.SOLOTEST === 'true') {
+  main('G:\\DOCS\\Out Loud ANEW\\internal 2018\\toolbelt-static-html5-wrapper\\testData')
 }
 
 
