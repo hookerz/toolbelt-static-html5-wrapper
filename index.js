@@ -7,6 +7,7 @@ const relative = require('relative');
 const tmp = require('tmp');
 const imageinfo = require('imageinfo');
 const replace = require('replace-in-file');
+const del = require('del');
 let main = function (rootDir) {
   return new Promise((resolve, reject) => {
     console.log(`Hello world ${process.env.SOLOTEST}`);
@@ -26,6 +27,8 @@ let main = function (rootDir) {
       console.error('static directory missing');
       reject(new Error('static directory missing'));
     }
+    del.sync(outPutDir,{force:true});
+    
     let retinaImages = null;
     let staticImages = null;
     let missingStatics = null;
@@ -41,6 +44,22 @@ let main = function (rootDir) {
     let pathBuilder = function (relDir) {
       return relDir.replace('.jpg', '').replace('.gif', '').replace('.png', '')
     };
+  
+    let deleteFiles = function () {
+      _.each(retinaImages, (value) => {
+        let source = path.join(retinaDir, value);
+        let name = path.basename(source);
+        let destinationDirectory = path.join(tmpobj.name, pathBuilder(value));
+        let image = path.join(destinationDirectory, name);
+        let css = path.join(destinationDirectory, 'main.css');
+        let html = path.join(destinationDirectory, 'index.html');
+  
+        del.sync([image, css,html],{force:true});
+        
+      })
+    };
+    
+    
     let buildZip = function () {
       _.each(retinaImages, (value) => {
         let source = path.join(retinaDir, value);
@@ -126,7 +145,8 @@ let main = function (rootDir) {
       copyTemplates();
       copyRetinaImages();
       writeValuesToTemplates();
-      buildZip()
+      buildZip();
+      deleteFiles();
       //
       copyToFinal();
       resolve();

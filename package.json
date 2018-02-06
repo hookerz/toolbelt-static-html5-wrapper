@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/hookerz/toolbelt-static-html5-wrapper#readme",
   "dependencies": {
+    "del": "^3.0.0",
     "fs-extra": "^5.0.0",
     "glob": "^7.1.2",
     "imageinfo": "^1.0.4",
