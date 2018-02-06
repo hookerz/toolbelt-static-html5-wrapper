@@ -33,25 +33,31 @@ let main = function (rootDir) {
       console.error('statics are missing ', err.missingStatics);
       reject(err);
     }
-    makeOutputDirs(tmpobj.name, retinaImages)
+    makeOutputDirs(tmpobj.name, retinaImages);
+    copyTemplates(tmpobj.name, retinaImages,templatesDir);
+    
     if (fs.existsSync(tmpobj.name)) {
-      return fs.copySync(tmpobj.name, outPutDir)
+      fs.copySync(tmpobj.name, outPutDir)
     } else {
       console.log('wtf')
     }
+    resolve();
   })
 };
-let makeOutputDirs = function (rootDir, dirs) {
-  
-  _.each (dirs,(value)=>{
-  
-    let item = path.join(rootDir, value.replace('.jpg', '').replace('.gif', '').replace('.png', ''));
-    fs.ensureDirSync(item);
-    
+let pathBuilder = function (relDir) {
+  return relDir.replace('.jpg', '').replace('.gif', '').replace('.png', '')
+}
+let copyTemplates = function (rootDir, dirs, template) {
+  _.each(dirs, (value) => {
+    let item = path.join(rootDir, pathBuilder(value));
+    fs.copySync(template, item)
   })
-  
-  
-
+}
+let makeOutputDirs = function (rootDir, dirs) {
+  _.each(dirs, (value) => {
+    let item = path.join(rootDir, pathBuilder(value));
+    fs.ensureDirSync(item);
+  })
 };
 let getImageFiles = function (directory) {
   return _.map(
@@ -70,9 +76,9 @@ let checkStaticsExist = function (retinas, statics) {
 };
 let reductiveItterator = function (sourceArray, iteree) {
   sourceArray = _.cloneDeep(sourceArray);
-  return new Promise( (resolve, reject) => {
+  return new Promise((resolve, reject) => {
     let run = function () {
-      let item = _.remove(sourceArray,  (value, index) => {
+      let item = _.remove(sourceArray, (value, index) => {
         return index === 0;
       });
       if (item.length === 0) {

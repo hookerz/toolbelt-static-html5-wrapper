@@ -1,0 +1,29 @@
+body {
+
+  margin: 0px;
+  padding: 0px;
+  border: 0px;
+  background-color: #FFFFFF;
+  cursor: pointer;
+
+}
+
+#adRoot {
+
+	width: __WIDTH__px;
+	height: __HEIGHT__px;
+	background-color: #FFFFFF;
+	position: absolute;
+	cursor: pointer;
+}
+
+
+#adContent {
+	position: absolute;
+	width: __WIDTH__px;
+	height: __HEIGHT__px;
+	background-image: url("__IMAGE__");
+	background-size: __WIDTH__px __HEIGHT__px;
+}
+
+
