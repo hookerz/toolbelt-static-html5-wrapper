@@ -15,5 +15,8 @@
   "bugs": {
     "url": "https://github.com/hookerz/toolbelt-static-html5-wrapper/issues"
   },
-  "homepage": "https://github.com/hookerz/toolbelt-static-html5-wrapper#readme"
+  "homepage": "https://github.com/hookerz/toolbelt-static-html5-wrapper#readme",
+  "dependencies": {
+    "lodash": "^4.17.5"
+  }
 }
