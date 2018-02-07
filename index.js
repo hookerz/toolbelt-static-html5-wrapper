@@ -1,8 +1,10 @@
 "use strict";
 let fs = require('fs');
 let path = require('path');
-let folderPath =''
+let folderPath ='';
 let input = null;
+let button = null;
+let outputLog = null;
 
 plugin.onload = init; // triggered when Toolbelt is ready to display this plugin.
 
@@ -20,10 +22,10 @@ function renderInterface() {
   // Plugins have access to the DOM of the index.html file this script was loaded in.
 
   input = document.getElementById('folderFinder');
-  
-  
   input.addEventListener('change', updateFolderList);
-  
+  button =  document.getElementById('run');
+  button.addEventListener ('click',clickHandler);
+  outputLog =  document.getElementById('outputLog');
 }
 
 function updateFolderList (e) {
@@ -32,6 +34,20 @@ function updateFolderList (e) {
   
   folderPath = input.files[0].path;
 
+
+}
+
+
+function clickHandler () {
+
+
+  if (folderPath==='') {
+    outputLog.innerHTML = "Please select a valid folder first";
+    
+  }else {
+  
+    outputLog.innerHTML = "Starting The Run";
+  }
 
 }
 
