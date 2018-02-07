@@ -20,7 +20,10 @@ let main = function (rootDir) {
     const outPutDir = path.join(rootDir, 'Output');
     const templatesDir = path.join(process.cwd(), 'templates', 'dcm');
     let tmpobj = null;
-    // tmpobj.removeCallback();
+    let retinaImages = null;
+    let staticImages = null;
+    let missingStatics = null;
+    let imageDataObjects = null;
     if (!fs.existsSync(retinaDir)) {
       console.error('retina directory missing');
       reject(new Error('retina directory missing'));
@@ -34,10 +37,7 @@ let main = function (rootDir) {
     // remove output if it exists.
     process.chdir(rootDir);
     del.sync(outPutDir);
-    let retinaImages = null;
-    let staticImages = null;
-    let missingStatics = null;
-    let imageDataObjects = null;
+
     // application functions.
     let getImageFiles = function (directory) {
       return _.map(
@@ -51,18 +51,15 @@ let main = function (rootDir) {
       return _.map(
         retinaImages,
         (value) => {
-          
-          var retObject = {};
-  
-          retObject['rel']=value;
-          retObject['data']=path.parse(value);
-          retObject['retinaAbs']=path.join(retinaDir, pathBuilder(value));
-          retObject['retinaAbsFile']=path.join(retinaDir, retObject.data.dir,retObject.data.base);
-          retObject['staticAbs']=path.join(staticDir, pathBuilder(value));
-          retObject['staticAbsFile']=path.join(staticDir, retObject.data.dir,retObject.data.base);
-          retObject['tempAbs']=path.join(tmpobj.name, pathBuilder(value));
-          retObject['tempAbsFile']=path.join(tmpobj.name, pathBuilder(value) ,retObject.data.base);
-          
+          let retObject = {};
+          retObject['rel'] = value;
+          retObject['data'] = path.parse(value);
+          retObject['retinaAbs'] = path.join(retinaDir, pathBuilder(value));
+          retObject['retinaAbsFile'] = path.join(retinaDir, retObject.data.dir, retObject.data.base);
+          retObject['staticAbs'] = path.join(staticDir, pathBuilder(value));
+          retObject['staticAbsFile'] = path.join(staticDir, retObject.data.dir, retObject.data.base);
+          retObject['tempAbs'] = path.join(tmpobj.name, pathBuilder(value));
+          retObject['tempAbsFile'] = path.join(tmpobj.name, pathBuilder(value), retObject.data.base);
           return retObject
         }
       )
@@ -84,7 +81,7 @@ let main = function (rootDir) {
     };
     let deleteFiles = function () {
       _.each(imageDataObjects, (value) => {
-        let image =path.join(value.tempAbs, value.data.base);
+        let image = path.join(value.tempAbs, value.data.base);
         let css = path.join(value.tempAbs, 'main.css');
         let html = path.join(value.tempAbs, 'index.html');
         process.chdir(value.tempAbs);
@@ -93,16 +90,15 @@ let main = function (rootDir) {
     };
     let buildZip = function () {
       _.each(imageDataObjects, (value) => {
-
         let zip = new require('node-zip')();
         let image = fs.readFileSync(path.join(value.tempAbs, value.data.base));
         let css = fs.readFileSync(path.join(value.tempAbs, 'main.css'));
         let html = fs.readFileSync(path.join(value.tempAbs, 'index.html'));
         zip.file('index.html', html);
         zip.file('main.css', css);
-        zip.file( value.data.base, image, {base64: true});
+        zip.file(value.data.base, image, {base64: true});
         let data = zip.generate({base64: false, compression: 'DEFLATE'});
-        let zipFileName = path.join(value.tempAbs,  value.data.name+'.zip');
+        let zipFileName = path.join(value.tempAbs, value.data.name + '.zip');
         fs.writeFileSync(zipFileName, data, 'binary');
       })
     };
@@ -136,13 +132,11 @@ let main = function (rootDir) {
     };
     let copyTemplates = function () {
       _.each(imageDataObjects, (value) => {
-        
         fs.copySync(templatesDir, value.tempAbs)
       })
     };
     let makeOutputDirs = function () {
       _.each(imageDataObjects, (value) => {
-        
         fs.ensureDirSync(value.tempAbs);
       })
     };
@@ -182,24 +176,6 @@ let main = function (rootDir) {
     run()
     // end promise
   });
-};
-let reductiveItterator = function (sourceArray, iteree) {
-  sourceArray = _.cloneDeep(sourceArray);
-  return new Promise((resolve, reject) => {
-    let run = function () {
-      let item = _.remove(sourceArray, (value, index) => {
-        return index === 0;
-      });
-      if (item.length === 0) {
-        resolve();
-        return;
-      }
-      item = item[0];
-      iteree(item)
-        .then(run);
-    };
-    run();
-  })
 };
 module.exports = main;
 if (process.env.SOLOTEST === 'true') {
