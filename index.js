@@ -95,19 +95,17 @@ let main = function (rootDir) {
       })
     };
     let buildZip = function () {
-      _.each(retinaImages, (value) => {
-        let source = path.join(retinaDir, value);
-        let name = path.basename(source);
-        let destinationDirectory = path.join(tmpobj.name, pathBuilder(value));
+      _.each(imageDataObjects, (value) => {
+
         let zip = new require('node-zip')();
-        let image = fs.readFileSync(path.join(destinationDirectory, name));
-        let css = fs.readFileSync(path.join(destinationDirectory, 'main.css'));
-        let html = fs.readFileSync(path.join(destinationDirectory, 'index.html'));
+        let image = fs.readFileSync(path.join(value.tempAbs, value.data.base));
+        let css = fs.readFileSync(path.join(value.tempAbs, 'main.css'));
+        let html = fs.readFileSync(path.join(value.tempAbs, 'index.html'));
         zip.file('index.html', html);
         zip.file('main.css', css);
-        zip.file(name, image, {base64: true});
+        zip.file( value.data.base, image, {base64: true});
         let data = zip.generate({base64: false, compression: 'DEFLATE'});
-        let zipFileName = path.join(destinationDirectory, name.replace('.jpg', '.zip').replace('.gif', '.zip').replace('.png', '.zip'));
+        let zipFileName = path.join(value.tempAbs,  value.data.name+'.zip');
         fs.writeFileSync(zipFileName, data, 'binary');
       })
     };
