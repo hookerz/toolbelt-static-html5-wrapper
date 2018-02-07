@@ -10,3 +10,6 @@ config.json
 *_.json
 *_.txt
 **/*_.txt
+
+/testData/Output
+/testData/Output/**
