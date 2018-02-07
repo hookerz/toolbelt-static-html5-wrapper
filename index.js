@@ -128,9 +128,9 @@ let main = function (rootDir) {
       })
     };
     let copyRetinaImages = function () {
-      _.each(retinaImages, (value) => {
-        let source = path.join(retinaDir, value);
-        let destination = path.join(tmpobj.name, pathBuilder(value), path.basename(source));
+      _.each(imageDataObjects, (value) => {
+        let source = path.join(value.retinaAbs, value.data.base);
+        let destination = path.join(value.tempAbs,value.data.base);
         fs.copySync(source, destination)
       })
     };
@@ -145,15 +145,15 @@ let main = function (rootDir) {
       fs.copySync(tmpobj.name, outPutDir)
     };
     let copyTemplates = function () {
-      _.each(retinaImages, (value) => {
-        let item = path.join(tmpobj.name, pathBuilder(value));
-        fs.copySync(templatesDir, item)
+      _.each(imageDataObjects, (value) => {
+        
+        fs.copySync(templatesDir, value.tempAbs)
       })
     };
     let makeOutputDirs = function () {
-      _.each(retinaImages, (value) => {
-        let item = path.join(tmpobj.name, pathBuilder(value));
-        fs.ensureDirSync(item);
+      _.each(imageDataObjects, (value) => {
+        
+        fs.ensureDirSync(value.tempAbs);
       })
     };
     let checkStaticsExist = function () {
