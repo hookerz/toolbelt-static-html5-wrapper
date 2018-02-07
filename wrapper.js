@@ -11,15 +11,14 @@ const del = require('del');
 if (process.env.SOLOTEST !== 'true') {
   tmp.setGracefulCleanup();
 }
-let main = function (rootDir,logger=console) {
+let main = function (rootDir,logger=console,cwdRoot = process.cwd() ) {
   return new Promise((resolve, reject) => {
     logger.log(`!! Hello world ${process.env.SOLOTEST}`);
-    logger.log(`!! Hello world ${process.cwd()}`);
-    return;
+    logger.log(`!! Hello world ${cwdRoot}`);
     const retinaDir = path.normalize(path.join(rootDir, 'Retina'));
     const staticDir = path.join(rootDir, 'Statics');
     const outPutDir = path.join(rootDir, 'Output');
-    const templatesDir = path.join(process.cwd(), 'templates', 'dcm');
+    const templatesDir = path.join(cwdRoot, 'templates', 'dcm');
     let tmpobj = null;
     let retinaImages = null;
     let staticImages = null;

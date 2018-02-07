@@ -10,7 +10,8 @@ let outputLog = null;
 let taskRunner = null;
 plugin.onload = init; // triggered when Toolbelt is ready to display this plugin.
 function init() {
-  console.log ('!! plugin init',process.cwd())
+  console.log ('!! plugin init',process.cwd(),plugin.path);
+  
   
    renderInterface();
   //setupCheckbox();
@@ -63,12 +64,18 @@ function buildLogger() {
 }
 
 function run() {
-  taskRunner = require('./wrapper')(folderPath, buildLogger())
+  
+  let log = buildLogger();
+  
+  taskRunner = require('./wrapper')(folderPath, log,plugin.path)
   taskRunner.then(function () {
+    
+      log.log ('!!!! Job Completed' )
+    
     })
     .catch(function (errr){
-    
-    console.log ('!!!! promise rejected',errr )
+  
+      log.log ('!!!! promise rejected',errr )
     })
   
 }
