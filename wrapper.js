@@ -13,8 +13,8 @@ if (process.env.SOLOTEST !== 'true') {
 }
 let main = function (rootDir) {
   return new Promise((resolve, reject) => {
-    console.log(`Hello world ${process.env.SOLOTEST}`);
-    console.log(`Hello world ${process.cwd()}`);
+    logger.log(`!! Hello world ${process.env.SOLOTEST}`);
+    logger.log(`!! Hello world ${process.cwd()}`);
     const retinaDir = path.normalize(path.join(rootDir, 'Retina'));
     const staticDir = path.join(rootDir, 'Statics');
     const outPutDir = path.join(rootDir, 'Output');
@@ -25,15 +25,15 @@ let main = function (rootDir) {
     let missingStatics = null;
     let imageDataObjects = null;
     if (!fs.existsSync(retinaDir)) {
-      console.error('retina directory missing');
+      logger.error('!! retina directory missing');
       reject(new Error('retina directory missing'));
     }
     if (!fs.existsSync(retinaDir)) {
-      console.error('static directory missing');
+      logger.error('!!  static directory missing');
       reject(new Error('static directory missing'));
     }
     tmpobj = tmp.dirSync();
-    console.log('Dir: ', tmpobj.name);
+    logger.log('!! Dir: ', tmpobj.name);
     // remove output if it exists.
     process.chdir(rootDir);
     del.sync(outPutDir);
@@ -154,7 +154,7 @@ let main = function (rootDir) {
       if (missingStatics !== null) {
         let err = new Error('static directory missing');
         err.missingStatics = missingStatics;
-        console.error('statics are missing ', err.missingStatics);
+        logger.error('!! statics are missing ', err.missingStatics);
         reject(err);
       }
       imageDataObjects = buildImageFileMap();
@@ -179,7 +179,7 @@ let main = function (rootDir) {
 };
 module.exports = main;
 if (process.env.SOLOTEST === 'true') {
-  main('G:\\DOCS\\Out Loud ANEW\\internal 2018\\toolbelt-static-html5-wrapper\\testData')
+  main('G:\\DOCS\\Out Loud ANEW\\internal 2018\\toolbelt-static-html5-wrapper\\testData',logger = console)
 }
 
 

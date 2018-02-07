@@ -5,6 +5,8 @@ let folderPath ='';
 let input = null;
 let button = null;
 let outputLog = null;
+let taskRunner = require('wrapper');
+
 
 plugin.onload = init; // triggered when Toolbelt is ready to display this plugin.
 
