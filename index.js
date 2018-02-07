@@ -83,14 +83,11 @@ let main = function (rootDir) {
       tmpobj.removeCallback();
     };
     let deleteFiles = function () {
-      _.each(retinaImages, (value) => {
-        let source = path.join(retinaDir, value);
-        let name = path.basename(source);
-        let destinationDirectory = path.join(tmpobj.name, pathBuilder(value));
-        let image = path.join(destinationDirectory, name);
-        let css = path.join(destinationDirectory, 'main.css');
-        let html = path.join(destinationDirectory, 'index.html');
-        process.chdir(destinationDirectory);
+      _.each(imageDataObjects, (value) => {
+        let image =path.join(value.tempAbs, value.data.base);
+        let css = path.join(value.tempAbs, 'main.css');
+        let html = path.join(value.tempAbs, 'index.html');
+        process.chdir(value.tempAbs);
         del.sync([image, css, html]);
       })
     };
@@ -111,7 +108,6 @@ let main = function (rootDir) {
     };
     let writeValuesToTemplates = function () {
       _.each(imageDataObjects, (value) => {
-
         let info = imageinfo(fs.readFileSync(value.tempAbsFile));
         let finalWidth = info.width / 2;
         let finalHeight = info.height / 2;
@@ -160,7 +156,6 @@ let main = function (rootDir) {
     let buildLists = function () {
       retinaImages = getImageFiles(retinaDir);
       staticImages = getImageFiles(staticDir);
-      
       missingStatics = checkStaticsExist();
       if (missingStatics !== null) {
         let err = new Error('static directory missing');
