@@ -51,13 +51,19 @@ let main = function (rootDir) {
       return _.map(
         retinaImages,
         (value) => {
-          return {
-            rel: value,
-            data: path.parse(value),
-            retinaAbs: path.join(retinaDir, pathBuilder(value)),
-            staticAbs: path.join(staticDir, pathBuilder(value)),
-            tempAbs: path.join(tmpobj.name, pathBuilder(value)),
-          }
+          
+          var retObject = {};
+  
+          retObject['rel']=value;
+          retObject['data']=path.parse(value);
+          retObject['retinaAbs']=path.join(retinaDir, pathBuilder(value));
+          retObject['retinaAbsFile']=path.join(retinaDir, retObject.data.dir,retObject.data.base);
+          retObject['staticAbs']=path.join(staticDir, pathBuilder(value));
+          retObject['staticAbsFile']=path.join(staticDir, retObject.data.dir,retObject.data.base);
+          retObject['tempAbs']=path.join(tmpobj.name, pathBuilder(value));
+          retObject['tempAbsFile']=path.join(tmpobj.name, pathBuilder(value) ,retObject.data.base);
+          
+          return retObject
         }
       )
     };
@@ -106,39 +112,29 @@ let main = function (rootDir) {
       })
     };
     let writeValuesToTemplates = function () {
-      _.each(retinaImages, (value) => {
-        let source = path.join(retinaDir, value);
-        let name = path.basename(source);
-        let destinationFile = path.join(tmpobj.name, pathBuilder(value), name);
-        let destinationDirectory = path.join(tmpobj.name, pathBuilder(value));
-        let file = fs.readFileSync(destinationFile);
-        let info = imageinfo(file)
-        //console.log("Data is type:", info.mimeType);
-        //console.log("  Dimensions:", info.width, "x", info.height);
+      _.each(imageDataObjects, (value) => {
+
+        let info = imageinfo(fs.readFileSync(value.tempAbsFile));
         let finalWidth = info.width / 2;
         let finalHeight = info.height / 2;
         replace.sync({
           files: [
-            path.join(destinationDirectory, '/**/*.html'),
-            path.join(destinationDirectory, '/**/*.css')
+            path.join(value.tempAbs, '/**/*.html'),
+            path.join(value.tempAbs, '/**/*.css')
           ],
           from: [/__IMAGE__/g, /__WIDTH__/g, /__HEIGHT__/g],
-          to: [name, finalWidth, finalHeight]
+          to: [value.data.base, finalWidth, finalHeight]
         })
       })
     };
     let copyRetinaImages = function () {
       _.each(imageDataObjects, (value) => {
-        let source = path.join(value.retinaAbs, value.data.base);
-        let destination = path.join(value.tempAbs,value.data.base);
-        fs.copySync(source, destination)
+        fs.copySync(value.retinaAbsFile, value.tempAbsFile)
       })
     };
     let copyStaticsImages = function () {
-      _.each(retinaImages, (value) => {
-        let source = path.join(staticDir, value);
-        let destination = path.join(tmpobj.name, pathBuilder(value), path.basename(source));
-        fs.copySync(source, destination)
+      _.each(imageDataObjects, (value) => {
+        fs.copySync(value.staticAbsFile, value.tempAbsFile)
       })
     };
     let copyToFinal = function () {
