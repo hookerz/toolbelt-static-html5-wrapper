@@ -1,20 +1,17 @@
 "use strict";
 let fs = require('fs');
 let path = require('path');
-let folderPath ='';
+let process = require('process');
+let folderPath = '';
 let input = null;
 let button = null;
 let outputLog = null;
-let taskRunner = require('wrapper');
-
-
+let taskRunner = null;
 plugin.onload = init; // triggered when Toolbelt is ready to display this plugin.
-
-
-
 function init() {
-  console.log('!!!! HELLO WORLD');
-  renderInterface();
+  console.log ('!! plugin init',process.cwd(),path.resolve('./'))
+  
+   renderInterface();
   //setupCheckbox();
   plugin.init(); // We've rendered our elements, now to tell Toolbelt the plugin is ready to be displayed.
   //openFrame();
@@ -22,37 +19,54 @@ function init() {
 
 function renderInterface() {
   // Plugins have access to the DOM of the index.html file this script was loaded in.
-
   input = document.getElementById('folderFinder');
   input.addEventListener('change', updateFolderList);
-  button =  document.getElementById('run');
-  button.addEventListener ('click',clickHandler);
-  outputLog =  document.getElementById('outputLog');
+  button = document.getElementById('run');
+  button.addEventListener('click', clickHandler);
+  outputLog = document.getElementById('outputLog');
 }
 
-function updateFolderList (e) {
-
-  console.log ("!!",input.files[0].path);
-  
+function updateFolderList(e) {
+  console.log("!!", input.files[0].path);
   folderPath = input.files[0].path;
-
-
 }
 
-
-function clickHandler () {
-
-
-  if (folderPath==='') {
-    outputLog.innerHTML = "Please select a valid folder first";
-    
-  }else {
-  
-    outputLog.innerHTML = "Starting The Run";
+function buildLogger() {
+  return {
+    info: function () {
+      //outputLog.innerHTML += arguments.join() + '\n\n';
+      console.info.apply(console, arguments);
+    },
+    log: function () {
+     // outputLog.innerHTML += arguments.join() + '\n\n';
+      console.log.apply(console, arguments);
+    },
+    error: function () {
+     // outputLog.innerHTML += arguments.join() + '\n\n';
+      console.error.apply(console, arguments);
+    }
   }
-
 }
 
+function run() {
+  taskRunner = require('./wrapper')(folderPath, buildLogger())
+  taskRunner.then(function () {
+    })
+    .catch(function (errr){
+    
+    console.log ('!!!! promise rejected',errr )
+    })
+  
+}
+
+function clickHandler() {
+  if (folderPath === '') {
+    outputLog.innerHTML = "Please select a valid folder first";
+  } else {
+    outputLog.innerHTML = "Starting The Run";
+    run()
+  }
+}
 
 /*
 function setupCheckbox() {

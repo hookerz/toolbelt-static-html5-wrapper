@@ -11,7 +11,7 @@ const del = require('del');
 if (process.env.SOLOTEST !== 'true') {
   tmp.setGracefulCleanup();
 }
-let main = function (rootDir) {
+let main = function (rootDir,logger=console) {
   return new Promise((resolve, reject) => {
     logger.log(`!! Hello world ${process.env.SOLOTEST}`);
     logger.log(`!! Hello world ${process.cwd()}`);
@@ -179,7 +179,7 @@ let main = function (rootDir) {
 };
 module.exports = main;
 if (process.env.SOLOTEST === 'true') {
-  main('G:\\DOCS\\Out Loud ANEW\\internal 2018\\toolbelt-static-html5-wrapper\\testData',logger = console)
+  main('G:\\DOCS\\Out Loud ANEW\\internal 2018\\toolbelt-static-html5-wrapper\\testData',console)
 }
 
 
