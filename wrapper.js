@@ -174,7 +174,7 @@ let main = function (rootDir,logger=console,cwdRoot = process.cwd() ) {
       //
       copyToFinal();
       cleanUp();
-      resolve();
+      resolve(imageDataObjects);
     };
     run()
     // end promise

@@ -62,10 +62,18 @@ function run() {
   
   let log = buildLogger();
   taskRunner = require('./wrapper')(folderPath, log, plugin.path)
-  taskRunner.then(function () {
-      log.log('PLUGIN Job Completed');
+  taskRunner.then(function (imageDataObjects) {
+      log.log(' Job Completed');
+      log.log('');
+      log.log('Completed Files:');
+      log.log('');
       button.disabled = false;
       button.style.opacity = 1;
+    
+      _.each(imageDataObjects, (value) => {
+        log.log(value.rel.replace ('jpg','').replace ('gif','').replace ('png',''));
+      })
+      
     })
     .catch(function (errr) {
       button.disabled = false;
