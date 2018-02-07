@@ -1,22 +1,10 @@
 {
-  "name": "toolbelt-static-html5-wrapper",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/hookerz/toolbelt-static-html5-wrapper.git"
-  },
-  "author": "",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/hookerz/toolbelt-static-html5-wrapper/issues"
-  },
-  "homepage": "https://github.com/hookerz/toolbelt-static-html5-wrapper#readme",
-  "dependencies": {
+  "name": "toolbelt-plugin-template",
+  "title": "DCM Static Wrapper",
+  "version": "0.0.5",
+  "description": "Wraps Retina Images in HTML5 DCM wrappers",
+  "main": "index.html",
+    "dependencies": {
     "del": "^3.0.0",
     "fs-extra": "^5.0.0",
     "glob": "^7.1.2",
@@ -26,5 +14,11 @@
     "relative": "^3.0.2",
     "replace-in-file": "^3.1.1",
     "tmp": "0.0.33"
+  },
+  "config":{
+    "width": 400, 
+    "height": 360,
+    "devmode": true,
+    "hidden": false
   }
 }
