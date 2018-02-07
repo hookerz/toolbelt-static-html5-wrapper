@@ -1,32 +1,42 @@
+"use strict";
 let fs = require('fs');
 let path = require('path');
-
+let folderPath =''
+let input = null;
 
 plugin.onload = init; // triggered when Toolbelt is ready to display this plugin.
 
+
+
 function init() {
-
-  console.log ('!!!! HELLO WORLD');
-  
-
+  console.log('!!!! HELLO WORLD');
   renderInterface();
-  setupCheckbox();
-
-
+  //setupCheckbox();
   plugin.init(); // We've rendered our elements, now to tell Toolbelt the plugin is ready to be displayed.
-
   //openFrame();
-
 }
 
 function renderInterface() {
   // Plugins have access to the DOM of the index.html file this script was loaded in.
-  let paragraphElement = document.createElement('p');
-  paragraphElement.innerHTML = 'Some example text.';
 
-  document.body.appendChild(paragraphElement);
+  input = document.getElementById('folderFinder');
+  
+  
+  input.addEventListener('change', updateFolderList);
+  
 }
 
+function updateFolderList (e) {
+
+  console.log ("!!",input.files[0].path);
+  
+  folderPath = input.files[0].path;
+
+
+}
+
+
+/*
 function setupCheckbox() {
   let settingsCheckbox = document.querySelector('#some-setting');
   // The Plugin config object can be modified and added to for saving settings and state of the plugin. This is saved to the project when a user runs "Save Project".
@@ -38,17 +48,14 @@ function setupCheckbox() {
     plugin.config.someSetting = settingsCheckbox.checked; // Update our config with the checkbox's latest state.
   }
 }
-
-
-
-function openFrame(){
+*/
+function openFrame() {
   let frame = plugin.createFrame('Plugin Template Frame', {
     width: 300,
     height: 250,
     x: plugin.frame.width - 5,
     y: plugin.frame.y
   });
-
   frame.document.body.innerHTML = 'Hello World!';
 }
 
