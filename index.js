@@ -2,7 +2,7 @@
 let fs = require('fs');
 let path = require('path');
 let process = require('process');
-let _ =require('lodash');
+let _ = require('lodash');
 let folderPath = '';
 let input = null;
 let button = null;
@@ -10,10 +10,8 @@ let outputLog = null;
 let taskRunner = null;
 plugin.onload = init; // triggered when Toolbelt is ready to display this plugin.
 function init() {
-  console.log ('!! plugin init',process.cwd(),plugin.path);
-  
-  
-   renderInterface();
+  console.log('PLUGIN plugin init', process.cwd(), plugin.path);
+  renderInterface();
   //setupCheckbox();
   plugin.init(); // We've rendered our elements, now to tell Toolbelt the plugin is ready to be displayed.
   //openFrame();
@@ -29,34 +27,27 @@ function renderInterface() {
 }
 
 function updateFolderList(e) {
-  console.log("!!", input.files[0].path);
+  console.log("PLUGIN", input.files[0].path);
   folderPath = input.files[0].path;
 }
 
 function buildLogger() {
   return {
     info: function () {
-      _.forOwn(arguments,(value,key)=>{
+      _.forOwn(arguments, (value, key) => {
         outputLog.innerHTML += value + "<br />"
-    
       });
       console.info.apply(console, arguments);
     },
     log: function () {
-      _.forOwn(arguments,(value,key)=>{
-        outputLog.innerHTML += value +"<br />"
-    
+      _.forOwn(arguments, (value, key) => {
+        outputLog.innerHTML += value + "<br />"
       });
-      
-      
-      
-      
       console.log.apply(console, arguments);
     },
     error: function () {
-      _.forOwn(arguments,(value,key)=>{
+      _.forOwn(arguments, (value, key) => {
         outputLog.innerHTML += value + "<br />"
-    
       });
       console.error.apply(console, arguments);
     }
@@ -65,26 +56,35 @@ function buildLogger() {
 
 function run() {
   
+  
+  button.disabled = true;
+  button.style.opacity = .25;
+  
   let log = buildLogger();
-  
-  taskRunner = require('./wrapper')(folderPath, log,plugin.path)
+  taskRunner = require('./wrapper')(folderPath, log, plugin.path)
   taskRunner.then(function () {
-    
-      log.log ('!!!! Job Completed' )
-    
+      log.log('PLUGIN Job Completed');
+      button.disabled = false;
+      button.style.opacity = 1;
     })
-    .catch(function (errr){
-  
-      log.log ('!!!! promise rejected',errr )
+    .catch(function (errr) {
+      button.disabled = false;
+      button.style.opacity = 1;
+      log.log('PLUGIN promise rejected', errr)
+      if (errr.message === 'missing static files') {
+        _.forOwn(errr.missingStatics, (value, key) => {
+          log.error('Static Missing: ' + value);
+        });
+      }
     })
-  
 }
 
 function clickHandler() {
   if (folderPath === '') {
     outputLog.innerHTML = "Please select a valid folder first";
   } else {
-    outputLog.innerHTML = "Starting The Run"+"<br />";
+    outputLog.innerHTML = '';
+    outputLog.innerHTML = "Starting The Run" + "<br />";
     run()
   }
 }

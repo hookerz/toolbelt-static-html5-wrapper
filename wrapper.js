@@ -13,8 +13,8 @@ if (process.env.SOLOTEST !== 'true') {
 }
 let main = function (rootDir,logger=console,cwdRoot = process.cwd() ) {
   return new Promise((resolve, reject) => {
-    logger.log(`!! Hello world ${process.env.SOLOTEST}`);
-    logger.log(`!! Hello world ${cwdRoot}`);
+    console.log(`WRAPPER Hello world ${process.env.SOLOTEST}`);
+    console.log(`WRAPPER Hello world ${cwdRoot}`);
     const retinaDir = path.normalize(path.join(rootDir, 'Retina'));
     const staticDir = path.join(rootDir, 'Statics');
     const outPutDir = path.join(rootDir, 'Output');
@@ -25,15 +25,17 @@ let main = function (rootDir,logger=console,cwdRoot = process.cwd() ) {
     let missingStatics = null;
     let imageDataObjects = null;
     if (!fs.existsSync(retinaDir)) {
-      logger.error('!! retina directory missing');
+      logger.error('Retina directory missing expecting /Retina in root');
       reject(new Error('retina directory missing'));
+      return;
     }
     if (!fs.existsSync(retinaDir)) {
-      logger.error('!!  static directory missing');
+      logger.error('Static directory missing expecting /Statics in root');
       reject(new Error('static directory missing'));
+      return;
     }
     tmpobj = tmp.dirSync();
-    logger.log('!! Dir: ', tmpobj.name);
+    console.log('WRAPPER Dir: ', tmpobj.name);
     // remove output if it exists.
     process.chdir(rootDir);
     del.sync(outPutDir);
@@ -152,10 +154,11 @@ let main = function (rootDir,logger=console,cwdRoot = process.cwd() ) {
       staticImages = getImageFiles(staticDir);
       missingStatics = checkStaticsExist();
       if (missingStatics !== null) {
-        let err = new Error('static directory missing');
+        let err = new Error('missing static files');
         err.missingStatics = missingStatics;
-        logger.error('!! statics are missing ', err.missingStatics);
+        console.error('WRAPPER statics are missing ', err.missingStatics);
         reject(err);
+        return;
       }
       imageDataObjects = buildImageFileMap();
     };
