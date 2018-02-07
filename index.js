@@ -19,8 +19,8 @@ let main = function (rootDir) {
     const staticDir = path.join(rootDir, 'Statics');
     const outPutDir = path.join(rootDir, 'Output');
     const templatesDir = path.join(process.cwd(), 'templates', 'dcm');
-    const tmpobj = tmp.dirSync();
-    console.log('Dir: ', tmpobj.name);
+    const tmpobj = null;
+    
     // tmpobj.removeCallback();
     if (!fs.existsSync(retinaDir)) {
       console.error('retina directory missing');
@@ -30,8 +30,12 @@ let main = function (rootDir) {
       console.error('static directory missing');
       reject(new Error('static directory missing'));
     }
+    tmp.dirSync();
+    console.log('Dir: ', tmpobj.name);
+    // remove output if it exists.
     process.chdir(rootDir);
     del.sync(outPutDir);
+    
     let retinaImages = null;
     let staticImages = null;
     let missingStatics = null;
