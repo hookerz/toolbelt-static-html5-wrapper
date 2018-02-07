@@ -2,6 +2,7 @@
 let fs = require('fs');
 let path = require('path');
 let process = require('process');
+let _ =require('lodash');
 let folderPath = '';
 let input = null;
 let button = null;
@@ -9,7 +10,7 @@ let outputLog = null;
 let taskRunner = null;
 plugin.onload = init; // triggered when Toolbelt is ready to display this plugin.
 function init() {
-  console.log ('!! plugin init',process.cwd(),path.resolve('./'))
+  console.log ('!! plugin init',process.cwd())
   
    renderInterface();
   //setupCheckbox();
@@ -34,15 +35,28 @@ function updateFolderList(e) {
 function buildLogger() {
   return {
     info: function () {
-      //outputLog.innerHTML += arguments.join() + '\n\n';
+      _.forOwn(arguments,(value,key)=>{
+        outputLog.innerHTML += value + "<br />"
+    
+      });
       console.info.apply(console, arguments);
     },
     log: function () {
-     // outputLog.innerHTML += arguments.join() + '\n\n';
+      _.forOwn(arguments,(value,key)=>{
+        outputLog.innerHTML += value +"<br />"
+    
+      });
+      
+      
+      
+      
       console.log.apply(console, arguments);
     },
     error: function () {
-     // outputLog.innerHTML += arguments.join() + '\n\n';
+      _.forOwn(arguments,(value,key)=>{
+        outputLog.innerHTML += value + "<br />"
+    
+      });
       console.error.apply(console, arguments);
     }
   }
@@ -63,7 +77,7 @@ function clickHandler() {
   if (folderPath === '') {
     outputLog.innerHTML = "Please select a valid folder first";
   } else {
-    outputLog.innerHTML = "Starting The Run";
+    outputLog.innerHTML = "Starting The Run"+"<br />";
     run()
   }
 }

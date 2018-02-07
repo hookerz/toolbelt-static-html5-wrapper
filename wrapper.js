@@ -15,6 +15,7 @@ let main = function (rootDir,logger=console) {
   return new Promise((resolve, reject) => {
     logger.log(`!! Hello world ${process.env.SOLOTEST}`);
     logger.log(`!! Hello world ${process.cwd()}`);
+    return;
     const retinaDir = path.normalize(path.join(rootDir, 'Retina'));
     const staticDir = path.join(rootDir, 'Statics');
     const outPutDir = path.join(rootDir, 'Output');
