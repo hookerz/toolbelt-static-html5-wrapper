@@ -71,7 +71,7 @@ function run() {
       button.style.opacity = 1;
     
       _.each(imageDataObjects, (value) => {
-        log.log(value.rel.replace ('jpg','').replace ('gif','').replace ('png',''));
+        log.log(value.rel.replace ('.jpg','').replace ('.gif','').replace ('.png',''));
       })
       
     })
