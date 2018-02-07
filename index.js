@@ -19,8 +19,7 @@ let main = function (rootDir) {
     const staticDir = path.join(rootDir, 'Statics');
     const outPutDir = path.join(rootDir, 'Output');
     const templatesDir = path.join(process.cwd(), 'templates', 'dcm');
-    const tmpobj = null;
-    
+    let tmpobj = null;
     // tmpobj.removeCallback();
     if (!fs.existsSync(retinaDir)) {
       console.error('retina directory missing');
@@ -30,21 +29,35 @@ let main = function (rootDir) {
       console.error('static directory missing');
       reject(new Error('static directory missing'));
     }
-    tmp.dirSync();
+    tmpobj = tmp.dirSync();
     console.log('Dir: ', tmpobj.name);
     // remove output if it exists.
     process.chdir(rootDir);
     del.sync(outPutDir);
-    
     let retinaImages = null;
     let staticImages = null;
     let missingStatics = null;
+    let imageDataObjects = null;
     // application functions.
     let getImageFiles = function (directory) {
       return _.map(
         glob.sync(path.join(directory, '/**/*.{png,gif,jpg}')),
         (value) => {
           return relative.toBase(directory, value)
+        }
+      )
+    };
+    let buildImageFileMap = function () {
+      return _.map(
+        retinaImages,
+        (value) => {
+          return {
+            rel: value,
+            data: path.parse(value),
+            retinaAbs: path.join(retinaDir, pathBuilder(value)),
+            staticAbs: path.join(staticDir, pathBuilder(value)),
+            tempAbs: path.join(tmpobj.name, pathBuilder(value)),
+          }
         }
       )
     };
@@ -153,6 +166,7 @@ let main = function (rootDir) {
     let buildLists = function () {
       retinaImages = getImageFiles(retinaDir);
       staticImages = getImageFiles(staticDir);
+      
       missingStatics = checkStaticsExist();
       if (missingStatics !== null) {
         let err = new Error('static directory missing');
@@ -160,6 +174,7 @@ let main = function (rootDir) {
         console.error('statics are missing ', err.missingStatics);
         reject(err);
       }
+      imageDataObjects = buildImageFileMap();
     };
     let run = function () {
       buildLists();
