@@ -1,186 +1,73 @@
-'use strict';
-const _ = require('lodash');
-const path = require('path');
-const fs = require('fs-extra');
-const glob = require('glob');
-const relative = require('relative');
-const tmp = require('tmp');
-const imageinfo = require('imageinfo');
-const replace = require('replace-in-file');
-const del = require('del');
-if (process.env.SOLOTEST !== 'true') {
-  tmp.setGracefulCleanup();
-}
-let main = function (rootDir) {
-  return new Promise((resolve, reject) => {
-    console.log(`Hello world ${process.env.SOLOTEST}`);
-    console.log(`Hello world ${process.cwd()}`);
-    const retinaDir = path.normalize(path.join(rootDir, 'Retina'));
-    const staticDir = path.join(rootDir, 'Statics');
-    const outPutDir = path.join(rootDir, 'Output');
-    const templatesDir = path.join(process.cwd(), 'templates', 'dcm');
-    let tmpobj = null;
-    let retinaImages = null;
-    let staticImages = null;
-    let missingStatics = null;
-    let imageDataObjects = null;
-    if (!fs.existsSync(retinaDir)) {
-      console.error('retina directory missing');
-      reject(new Error('retina directory missing'));
-    }
-    if (!fs.existsSync(retinaDir)) {
-      console.error('static directory missing');
-      reject(new Error('static directory missing'));
-    }
-    tmpobj = tmp.dirSync();
-    console.log('Dir: ', tmpobj.name);
-    // remove output if it exists.
-    process.chdir(rootDir);
-    del.sync(outPutDir);
+var fs = require('fs');
+var path = require('path');
+var test = require('./test'); // Plugins support using require.
 
-    // application functions.
-    let getImageFiles = function (directory) {
-      return _.map(
-        glob.sync(path.join(directory, '/**/*.{png,gif,jpg}')),
-        (value) => {
-          return relative.toBase(directory, value)
-        }
-      )
-    };
-    let buildImageFileMap = function () {
-      return _.map(
-        retinaImages,
-        (value) => {
-          let retObject = {};
-          retObject['rel'] = value;
-          retObject['data'] = path.parse(value);
-          retObject['retinaAbs'] = path.join(retinaDir, pathBuilder(value));
-          retObject['retinaAbsFile'] = path.join(retinaDir, retObject.data.dir, retObject.data.base);
-          retObject['staticAbs'] = path.join(staticDir, pathBuilder(value));
-          retObject['staticAbsFile'] = path.join(staticDir, retObject.data.dir, retObject.data.base);
-          retObject['tempAbs'] = path.join(tmpobj.name, pathBuilder(value));
-          retObject['tempAbsFile'] = path.join(tmpobj.name, pathBuilder(value), retObject.data.base);
-          return retObject
-        }
-      )
-    };
-    let pathBuilder = function (relDir) {
-      return relDir.replace('.jpg', '').replace('.gif', '').replace('.png', '')
-    };
-    let cleanUp = function () {
-      if (process.env.SOLOTEST === 'true') {
-        return;
-      }
-      process.chdir(tmpobj.name);
-      del.sync([
-        path.join(tmpobj.name, '/**'),
-        '!' + tmpobj.name,
-      ]);
-      process.chdir(rootDir);
-      tmpobj.removeCallback();
-    };
-    let deleteFiles = function () {
-      _.each(imageDataObjects, (value) => {
-        let image = path.join(value.tempAbs, value.data.base);
-        let css = path.join(value.tempAbs, 'main.css');
-        let html = path.join(value.tempAbs, 'index.html');
-        process.chdir(value.tempAbs);
-        del.sync([image, css, html]);
-      })
-    };
-    let buildZip = function () {
-      _.each(imageDataObjects, (value) => {
-        let zip = new require('node-zip')();
-        let image = fs.readFileSync(path.join(value.tempAbs, value.data.base));
-        let css = fs.readFileSync(path.join(value.tempAbs, 'main.css'));
-        let html = fs.readFileSync(path.join(value.tempAbs, 'index.html'));
-        zip.file('index.html', html);
-        zip.file('main.css', css);
-        zip.file(value.data.base, image, {base64: true});
-        let data = zip.generate({base64: false, compression: 'DEFLATE'});
-        let zipFileName = path.join(value.tempAbs, value.data.name + '.zip');
-        fs.writeFileSync(zipFileName, data, 'binary');
-      })
-    };
-    let writeValuesToTemplates = function () {
-      _.each(imageDataObjects, (value) => {
-        let info = imageinfo(fs.readFileSync(value.tempAbsFile));
-        let finalWidth = info.width / 2;
-        let finalHeight = info.height / 2;
-        replace.sync({
-          files: [
-            path.join(value.tempAbs, '/**/*.html'),
-            path.join(value.tempAbs, '/**/*.css')
-          ],
-          from: [/__IMAGE__/g, /__WIDTH__/g, /__HEIGHT__/g],
-          to: [value.data.base, finalWidth, finalHeight]
-        })
-      })
-    };
-    let copyRetinaImages = function () {
-      _.each(imageDataObjects, (value) => {
-        fs.copySync(value.retinaAbsFile, value.tempAbsFile)
-      })
-    };
-    let copyStaticsImages = function () {
-      _.each(imageDataObjects, (value) => {
-        fs.copySync(value.staticAbsFile, value.tempAbsFile)
-      })
-    };
-    let copyToFinal = function () {
-      fs.copySync(tmpobj.name, outPutDir)
-    };
-    let copyTemplates = function () {
-      _.each(imageDataObjects, (value) => {
-        fs.copySync(templatesDir, value.tempAbs)
-      })
-    };
-    let makeOutputDirs = function () {
-      _.each(imageDataObjects, (value) => {
-        fs.ensureDirSync(value.tempAbs);
-      })
-    };
-    let checkStaticsExist = function () {
-      let missing = _.difference(retinaImages, staticImages);
-      if (missing.length !== 0) {
-        return missing
-      }
-      return null;
-    };
-    let buildLists = function () {
-      retinaImages = getImageFiles(retinaDir);
-      staticImages = getImageFiles(staticDir);
-      missingStatics = checkStaticsExist();
-      if (missingStatics !== null) {
-        let err = new Error('static directory missing');
-        err.missingStatics = missingStatics;
-        console.error('statics are missing ', err.missingStatics);
-        reject(err);
-      }
-      imageDataObjects = buildImageFileMap();
-    };
-    let run = function () {
-      buildLists();
-      makeOutputDirs();
-      copyTemplates();
-      copyRetinaImages();
-      writeValuesToTemplates();
-      buildZip();
-      deleteFiles();
-      copyStaticsImages();
-      //
-      copyToFinal();
-      cleanUp();
-      resolve();
-    };
-    run()
-    // end promise
+plugin.onload = init; // triggered when Toolbelt is ready to display this plugin.
+
+function init() {
+
+  test.run(); // Testing out our included module.
+
+  renderInterface();
+  setupCheckbox();
+  runNodeScript();
+  writeTestFile();
+
+  plugin.init(); // We've rendered our elements, now to tell Toolbelt the plugin is ready to be displayed.
+
+  openFrame();
+
+}
+
+function renderInterface() {
+  // Plugins have access to the DOM of the index.html file this script was loaded in.
+  var paragraphElement = document.createElement('p');
+  paragraphElement.innerHTML = 'Some example text.';
+
+  document.body.appendChild(paragraphElement);
+}
+
+function setupCheckbox() {
+  var settingsCheckbox = document.querySelector('#some-setting');
+  // The Plugin config object can be modified and added to for saving settings and state of the plugin. This is saved to the project when a user runs "Save Project".
+  var isChecked = plugin.config.someSetting; // Retrieve the latest value from the plugin config. When a plugin is loaded, it pulls in the most recent saved config for this plugin into plugin.config.
+
+  settingsCheckbox.checked = plugin.config.someSetting || false; // Default is false if plugin.config.someSetting doesn't exist.
+
+  settingsCheckbox.onclick = () => {
+    plugin.config.someSetting = settingsCheckbox.checked; // Update our config with the checkbox's latest state.
+  }
+}
+
+function runNodeScript() {
+  // runScript returns a Node Runner instance. Node Runner runs the given script through an instance of NodeJS. Useful for scripts that weren't designed to run in an Electron environment.
+
+  var runner = plugin.runScript('./script.js'); // Run NodeJS script.
+
+  runner.ondata = function(msg){ // Fires when the script runs console.log() or stdout.write()
+    console.log('From Node process:', msg);
+  }
+
+  runner.sendData('init', {message: 'Sending data to a runner instance.'});
+}
+
+function openFrame(){
+  var frame = plugin.createFrame('Plugin Template Frame', {
+    width: 300,
+    height: 250,
+    x: plugin.frame.width - 5,
+    y: plugin.frame.y
   });
-};
-module.exports = main;
-if (process.env.SOLOTEST === 'true') {
-  main('G:\\DOCS\\Out Loud ANEW\\internal 2018\\toolbelt-static-html5-wrapper\\testData')
+
+  frame.document.body.innerHTML = 'Hello World!';
 }
 
+function writeTestFile() {
+  var projectPath = app.projectPath; // The current project folder of the current tab view.
+  var testFile = path.join(projectPath, 'pluginTest.txt')
 
-
+  fs.writeFile(testFile, 'Writing text from the plugin!', function(err) {
+    if(err) return console.log(err);
+    console.log('Wrote file from plugin.')
+  });
+}
