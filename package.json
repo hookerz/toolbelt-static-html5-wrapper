@@ -1,7 +1,7 @@
 {
-  "name": "toolbelt-plugin-template",
+  "name": "toolbelt-static-html5-wrapper",
   "title": "DCM Static Wrapper",
-  "version": "0.0.5",
+  "version": "1.0.0",
   "description": "Wraps Retina Images in HTML5 DCM wrappers",
   "main": "index.html",
   "dependencies": {
@@ -20,5 +20,15 @@
     "height": 800,
     "devmode": true,
     "hidden": false
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/hookerz/toolbelt-static-html5-wrapper.git"
+  },
+  "author": "chris <chris@byhook.com> (https://www.byhook.com)",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/hookerz/toolbelt-static-html5-wrapper/issues"
+  },
+  "homepage": "https://github.com/hookerz/toolbelt-static-html5-wrapper#readme"
 }
