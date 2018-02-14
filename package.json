@@ -1,7 +1,7 @@
 {
   "name": "toolbelt-static-html5-wrapper",
   "title": "DCM Static Wrapper",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Wraps Retina Images in HTML5 DCM wrappers",
   "main": "index.html",
   "dependencies": {
